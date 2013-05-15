@@ -1,8 +1,7 @@
 var app = {
-	logout:function(){
-	    FB.logout(function(response) {
-	    	location.reload();
-        });
+	addNote:function(){
+		jQuery("/addNote",function(data){
+			alert(data);
+		});	
 	}
-	
 };

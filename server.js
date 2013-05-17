@@ -25,15 +25,13 @@ http.createServer(function (req, res) {
 	   	
 	    var url_parts = url.parse(req.url, true);
 		var query = url_parts.query
-
-	    req.on('end',function(){
-		    res.end(getNotesFromCass(JSON.parse(query))); 
-		});
-
+		
 	    res.writeHead(200, { 
 	        'Content-Type': 'text/json',
 	        'Access-Control-Allow-Origin': '*' 
 	    });
+	    res.write(""+getNotesFromCass(JSON.parse(JSON.stringify(query))));
+	    res.end();
 	}  
 
 	if(req.method == 'POST' && req.url.indexOf("/addNote") != -1){
@@ -59,8 +57,9 @@ console.log('Server running at http://127.0.0.1:5000/');
 
 function addToCass(json){
 	json = JSON.parse(json);
-	var cql = "INSERT INTO App.users (KEY,heading,note) VALUES (?,?,?)";
-	cassandra.execute(cql,[json.username,json.heading,json.note], function(err, rows) {
+	var cql = "INSERT INTO App.users (KEY,username,heading,note) VALUES (?,?,?,?)";
+	cassandra.execute(cql,[json.username+(new Date().getTime()),json.username,
+		json.heading,json.note], function(err, rows) {
 	  if(err) {
 	  	console.log(err);
 	  	return 1;	
@@ -71,14 +70,14 @@ function addToCass(json){
 }
 
 function getNotesFromCass(json){
-	/*var cql = "SELECT notes,heading FROM App.UserData where username=?";
+	var cql = "SELECT notes,heading FROM App.users where username=?";
 	cassandra.execute(cql,[json.username], function(err, rows) {
 	  if(err) {
 	  	console.log(err);
 	  	return {error:1};	
 	  }
   	  responseJson={};
-	  for(var i=0;i<rows.length();i++){
+	  for(var i=0;i<rows.length;i++){
 		part={};
 		part['note']=rows[i].note;
 		part['heading']=rows[i].heading;
@@ -86,7 +85,7 @@ function getNotesFromCass(json){
 	  }
 
 	  return JSON.stringify(responseJson);
-	});*/
+	});
 	return {};
 }
 

@@ -5,11 +5,11 @@ var http = require('http'),
 var Connection = require('cassandra-client').PooledConnection;
 
 var hosts = ['192.168.1.26','192.168.1.3'];
-/*var cassandra = new Connection({'hosts': hosts, 'keyspace': 'Keyspace1'});
+var cassandra = new Connection({'hosts': hosts, 'keyspace': 'Keyspace1'});
 
 cassandra.on('log', function(level, message, obj) {
 	console.log('log event: %s -- %j', level, message);
-});*/
+});
 
 http.createServer(function (req, res) {
 	if(req.method == 'GET' && req.url.indexOf("/quickynote/home") != -1){
@@ -18,7 +18,7 @@ http.createServer(function (req, res) {
     	    res.write(data);
     	    res.end();
     	});	
-	}
+	} 
 
 	if(req.method == 'GET' && req.url.indexOf("/getNotes") != -1){
 	    console.log('Fetching notes from Cass');
@@ -34,14 +34,14 @@ http.createServer(function (req, res) {
 	        'Content-Type': 'text/json',
 	        'Access-Control-Allow-Origin': '*' 
 	    });
-	}   
+	}  
 
 	if(req.method == 'POST' && req.url.indexOf("/addNote") != -1){
 	    console.log('Request received');
 	   	
 	   	var json;
 	    req.on('data', function (chunk) {
-	    	json=JSON.parse(chunk.toString());
+	    	json=chunk.toString();
 	    });
 
 	    req.on('end',function(){
@@ -52,22 +52,21 @@ http.createServer(function (req, res) {
 		    'Content-Type': 'text/json',
 	        'Access-Control-Allow-Origin': '*' 
 	    });
-
 	}
-
 }).listen(5000);
 
 console.log('Server running at http://127.0.0.1:5000/');
 
 function addToCass(json){
-	/*var cql = "INSERT INTO App.UserData (username,heading,note) VALUES (?,?,?)";
+	json = JSON.parse(json);
+	var cql = "INSERT INTO App.users (KEY,heading,note) VALUES (?,?,?)";
 	cassandra.execute(cql,[json.username,json.heading,json.note], function(err, rows) {
 	  if(err) {
 	  	console.log(err);
 	  	return 1;	
 	  }
-		return 0;
-	});*/
+	  return 0;
+	});
 	return -1;
 }
 

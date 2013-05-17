@@ -4,8 +4,8 @@ var http = require('http'),
 
 var Connection = require('cassandra-client').PooledConnection;
 
-var hosts = ['192.168.1.26','192.168.1.3'];
-var cassandra = new Connection({'hosts': hosts, 'keyspace': 'Keyspace1'});
+var hosts = ['127.0.0.1','192.168.1.3'];
+var cassandra = new Connection({'hosts': hosts, 'keyspace': 'App'});
 
 cassandra.on('log', function(level, message, obj) {
 	console.log('log event: %s -- %j', level, message);
@@ -30,7 +30,7 @@ http.createServer(function (req, res) {
 	        'Content-Type': 'text/json',
 	        'Access-Control-Allow-Origin': '*' 
 	    });
-	    res.write(""+getNotesFromCass(JSON.parse(JSON.stringify(query))));
+	    res.write(""+getNotesFromCass(query));
 	    res.end();
 	}  
 
@@ -57,12 +57,12 @@ console.log('Server running at http://127.0.0.1:5000/');
 
 function addToCass(json){
 	json = JSON.parse(json);
-	var cql = "INSERT INTO App.users (KEY,username,heading,note) VALUES (?,?,?,?)";
+	var cql = "INSERT INTO App.users(KEY,username,heading,note) VALUES (?,?,?,?)";
 	cassandra.execute(cql,[json.username+(new Date().getTime()),json.username,
 		json.heading,json.note], function(err, rows) {
 	  if(err) {
 	  	console.log(err);
-	  	return 1;	
+	  	return 1;
 	  }
 	  return 0;
 	});
@@ -74,7 +74,7 @@ function getNotesFromCass(json){
 	cassandra.execute(cql,[json.username], function(err, rows) {
 	  if(err) {
 	  	console.log(err);
-	  	return {error:1};	
+	  	return {error:1};
 	  }
   	  responseJson={};
 	  for(var i=0;i<rows.length;i++){

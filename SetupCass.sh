@@ -11,3 +11,4 @@ mv $1 cassandra.tar.gz
 mv cassandra.tar.gz /usr/local/
 cd /usr/local/
 tar xvzf cassandra.tar.gz 
+echo "Extracting cassandra to /usr/local"

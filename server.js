@@ -2,10 +2,10 @@ var http = require('http'),
     fs = require('fs'),
     url = require('url');
 
-var Connection = require('cassandra-client').PooledConnection;
+var PooledConnection = require('cassandra-client').PooledConnection;
 
-var hosts = ['127.0.0.1','192.168.1.3'];
-var cassandra = new Connection({'hosts': hosts, 'keyspace': 'App'});
+var hosts = ['192.168.1.3','192.168.1.26'];
+var cassandra = new PooledConnection({'hosts': hosts, 'keyspace': 'App'});
 
 cassandra.on('log', function(level, message, obj) {
 	console.log('log event: %s -- %j', level, message);
@@ -18,7 +18,7 @@ http.createServer(function (req, res) {
     	    res.write(data);
     	    res.end();
     	});	
-	} 
+	}
 
 	if(req.method == 'GET' && req.url.indexOf("/getNotes") != -1){
 	    console.log('Fetching notes from Cass');
@@ -32,7 +32,7 @@ http.createServer(function (req, res) {
 	    });
 	    res.write(""+getNotesFromCass(query));
 	    res.end();
-	}  
+	}
 
 	if(req.method == 'POST' && req.url.indexOf("/addNote") != -1){
 	    console.log('Request received');
@@ -57,8 +57,10 @@ console.log('Server running at http://127.0.0.1:5000/');
 
 function addToCass(json){
 	json = JSON.parse(json);
-	var cql = "INSERT INTO App.users(KEY,username,heading,note) VALUES (?,?,?,?)";
-	cassandra.execute(cql,[json.username+(new Date().getTime()),json.username,
+	var cql = "INSERT INTO App.users(key,username,heading,note) VALUES (?,?,?,?)";
+	newKey=json.username+(new Date().getTime());
+	console.log("Key in cassandra-"+newKey);
+	cassandra.execute(cql,[newKey,json.username,
 		json.heading,json.note], function(err, rows) {
 	  if(err) {
 	  	console.log(err);
@@ -70,34 +72,40 @@ function addToCass(json){
 }
 
 function getNotesFromCass(json){
-	var cql = "SELECT notes,heading FROM App.users where username=?";
+	var cql = "SELECT * FROM App.users where username=?";
+	responseJson={};
+
 	cassandra.execute(cql,[json.username], function(err, rows) {
 	  if(err) {
 	  	console.log(err);
 	  	return {error:1};
 	  }
-  	  responseJson={};
-	  for(var i=0;i<rows.length;i++){
+	  console.log(rows.rowCount());
+	  for(var i=0;i<rows.rowCount();i++){
 		part={};
 		part['note']=rows[i].note;
 		part['heading']=rows[i].heading;
 		responseJson[i]=part;
 	  }
 
+	  console.log(responseJson);
 	  return JSON.stringify(responseJson);
 	});
 	return {};
 }
 
-
 /*
-Make cassandra keyspace
 
 Use cassandra-cli
 
-create keyspace App;
-use App;
-create column family UserData;
+create keyspace App with placement_strategy = 'org.apache.cassandra.locator.SimpleStrategy' and strategy_options = {replication_factor:2};
 
+use App;
+
+create column family users 
+with key_validation_class=UTF8Type and comparator = UTF8Type and column_metadata = 
+[{column_name: heading, validation_class:UTF8Type},
+ {column_name: note, validation_class:UTF8Type},
+ {column_name: username, validation_class: UTF8Type ,index_type: KEYS}];
 
 */

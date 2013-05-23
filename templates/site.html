@@ -6,17 +6,6 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-	<script>
-	var app = {
-		addNote:function(){
-			data ={'username' : "sample",'note': jQuery("#note").val(),'heading':jQuery("#heading").val()}; 
-			jQuery.post("/addNote",JSON.stringify(data),function(data){
-				alert(data);
-			});	
-		}
-	};
-	</script>
-	
     <link href="http://twitter.github.io/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
     <style type="text/css">
       body {
@@ -113,6 +102,10 @@
     <!--<script src="./site_files/jquery.js"></script>-->
     <!--<script src="bootstrap/js/bootstrap.min.js"></script>-->
   	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  	<script src="{{ url_for('static', filename='Constants.js') }}"></script>
+	<script src="{{ url_for('static', filename='app.js') }}"></script>
+	<script src="{{ url_for('static', filename='Ajax.js') }}"></script>
+	
+</body>
 
-
-</body></html>
+</html>

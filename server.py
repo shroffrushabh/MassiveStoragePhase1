@@ -35,8 +35,6 @@ def storeInCass():
 	count = 0
 	for key in users.get_indexed_slices(clause):
 		count +=1
-
-	print count
 		
 	if count != 0:
 		return 'Heading already exists'	

@@ -7,7 +7,7 @@ from pycassa.pool import ConnectionPool
 from pycassa.index import *
 
 app = Flask(__name__)
-pool = pycassa.ConnectionPool(keyspace='App', server_list=['192.168.1.26:9160'], prefill=False)
+pool = pycassa.ConnectionPool(keyspace='App', server_list=['127.0.0.1:9160'], prefill=False)
 users = pycassa.ColumnFamily(pool, 'users')
 
 
@@ -41,7 +41,7 @@ def storeInCass():
 
 	print 'Request recieved for storing in Cass....'
 	users.insert(data['username']+str(time.time()),data)
-	return '1'
+	return str({'flag':0})
 
 @app.route('/getNotes', methods=['GET'])
 def addNote():

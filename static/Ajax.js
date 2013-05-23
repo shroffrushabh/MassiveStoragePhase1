@@ -12,14 +12,30 @@ function Ajax(type) {
 }
 
 Ajax.prototype.sendRequest = function(){
-	jQuery.ajax({
+
+	switch(this.method){
+		case "GET":
+		jQuery.get(this.url+this.queryStr)
+			.done(this.successCallBack)
+			.fail(this.errorCallBack);
+		break;
+
+		case "POST":
+		jQuery.post(this.url,this.data)
+			.done(this.successCallBack)
+			.fail(this.errorCallBack);
+		break;
+	}
+
+
+/*	jQuery.ajax({
 		url:this.url+this.queryStr,
 		method:this.method,
-		data:this.data,
+		data:{'username':'vasu','heading':'Sample9','note':'SampleText9'},
 		contentType: this.contentType,
 	    dataType: this.dataType,
 		success:this.successCallBack,
 		error:this.errorCallBack,
-	});
+	});*/
 	
 };

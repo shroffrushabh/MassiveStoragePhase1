@@ -26,16 +26,5 @@ Ajax.prototype.sendRequest = function(){
 			.fail(this.errorCallBack);
 		break;
 	}
-
-
-/*	jQuery.ajax({
-		url:this.url+this.queryStr,
-		method:this.method,
-		data:{'username':'vasu','heading':'Sample9','note':'SampleText9'},
-		contentType: this.contentType,
-	    dataType: this.dataType,
-		success:this.successCallBack,
-		error:this.errorCallBack,
-	});*/
 	
 };

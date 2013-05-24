@@ -104,8 +104,9 @@ use App;
 
 create column family users 
 with key_validation_class=UTF8Type and comparator = UTF8Type and column_metadata = 
-[{column_name: heading, validation_class:UTF8Type},
+[{column_name: heading, validation_class:UTF8Type, index_type: KEYS},
  {column_name: note, validation_class:UTF8Type},
- {column_name: username, validation_class: UTF8Type ,index_type: KEYS}];
+ {column_name: username, validation_class: UTF8Type ,index_type: KEYS},
+ {column_name: secondaryKey, validation_class: UTF8Type ,index_type: KEYS}];
 
 */

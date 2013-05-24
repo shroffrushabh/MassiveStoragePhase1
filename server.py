@@ -7,7 +7,7 @@ from pycassa.pool import ConnectionPool
 from pycassa.index import *
 
 app = Flask(__name__)
-pool = pycassa.ConnectionPool(keyspace='App', server_list=['127.0.0.1:9160'], prefill=False)
+pool = pycassa.ConnectionPool(keyspace='App', server_list=['192.168.1.26:9160'], prefill=False)
 users = pycassa.ColumnFamily(pool, 'users')
 
 
@@ -26,6 +26,8 @@ def storeInCass():
 	data['username'] = str(request.form['username'])
 	data['heading'] = str(request.form['heading'])
 	data['note'] = str(request.form['note'])
+	cass_key=data['username']+str(time.time())
+	data['secondaryKey'] = cass_key
 
 	username_expr = create_index_expression('username', data['username'])
 	heading_expr = create_index_expression('heading', data['heading'])
@@ -40,21 +42,43 @@ def storeInCass():
 		return 'Heading already exists'	
 
 	print 'Request recieved for storing in Cass....'
-	users.insert(data['username']+str(time.time()),data)
-	return str({'flag':0})
+	users.insert(cass_key,data)
+
+	resp = {}
+	resp['response'] = 'addNoteResponse'
+	return str(resp)
 
 @app.route('/getNotes', methods=['GET'])
-def addNote():
+def getNotes():
+	res={}
+	query_string = request.query_string 
+	username=urlparse.parse_qs(query_string)['username'][0]	
+	cass_key={}
+
+	username_expr = create_index_expression('username', username)
+
+	clause = create_index_clause([username_expr])
+	for key, user in users.get_indexed_slices(clause):
+		if(res.has_key(user["note"]) == False):
+			#cass_key[user["note"]] = 
+			print key
+			res[user["note"]] = user["heading"]
+
+	resp = {}
+
+	resp["response"] = "getNotesResponse"
+	resp["payload"] = res 
+	return str(resp)
+
+'''	
+@app.route('/removeNote',methods=['GET'])
 	res={}
 	query_string = request.query_string 
 	username=urlparse.parse_qs(query_string)['username'][0]	
 
-	username_expr = create_index_expression('username', username)	
-	clause = create_index_clause([username_expr])
-	for key, user in users.get_indexed_slices(clause):
-		res[user['note']] = user['heading']
+'''
 
-	return str(res) 	
+
 
 if __name__ == "__main__":
     app.run(debug=True)

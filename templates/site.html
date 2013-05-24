@@ -82,20 +82,23 @@
             </ul>
           </div><!--/.well -->
         </div><!--/span-->
-        <div class="span9">
+        <div class="span9" id="grid">
           <div class="hero-unit">
             <h1 style="margin-bottom: 7px">Quick Note</h1>
    			<textarea rows="1" style="border: none; width: 100%;resize: none" name="heading" id = "heading" placeholder="Heading..." ></textarea>
 			<textarea rows="7" style="border: none; width: 100%;resize: none" name="note" id="note" ></textarea>
             <p><a href="#" class="btn btn-primary btn-large" onclick="app.addNote();return false;">Add Note</a></p>
           </div>
-          <div class="row-fluid">
+          <!--<div class="row-fluid" id = "row1">
+          	
             <div class="span4">
-              <h2>Heading</h2>
+              <h2><span id="">Heading</span></h2>
               <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
               <p><a class="btn" href="#">Remove Note</a></p>
-            </div><!--/span-->
+            </div>
+            
           </div><!--/row-->
+          
           
         </div><!--/span-->
       </div><!--/row-->

@@ -59,10 +59,10 @@ def getNotes():
 
 	clause = create_index_clause([username_expr])
 	for key, user in users.get_indexed_slices(clause):
-		if(res.has_key(user["note"]) == False):
+		if(res.has_key(user["heading"]) == False):
 			#cass_key[user["note"]] = 
-			print key
-			res[user["note"]] = user["heading"]
+			print
+			res[user["heading"]] = user["note"]
 
 	resp = {}
 

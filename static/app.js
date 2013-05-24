@@ -38,7 +38,7 @@ var app = {
 	},
 
 	successCallBack:function(data){
-		data = app.replaceAll(data,'u','')
+		data = app.replaceAll(data,"u'","'")
 		data = app.replaceAll(data,"'",'"')
 		JSONResp = JSON.parse(data);
 		window["app"][JSONResp.response](JSONResp.payload);

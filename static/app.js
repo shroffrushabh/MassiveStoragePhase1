@@ -4,7 +4,9 @@
 
 // Dont think the error call back works
 var rows;
+var keys;
 var row=0;
+var newElmKey;
 var lastElmCount;
 var app = {
 	
@@ -30,11 +32,21 @@ var app = {
 			aj = new Ajax();
 			aj.method = "GET";
 			aj.url = Constants.getNotes;
-			aj.queryStr = "?username="+app.getCookie('username');;
+			aj.queryStr = "?username="+jQuery.trim(app.getCookie('username'));
 			aj.successCallBack = app.successCallBack;
 			aj.errorCallBack = app.errorCallBack;			
 			aj.sendRequest();
 		
+	},
+
+	removeNote: function(userkey){
+		aj = new Ajax();
+		aj.method = "GET";
+		aj.url = Constants.removeNote;
+		aj.queryStr = "?userkey="+jQuery.trim(userkey);
+		aj.successCallBack = app.successCallBack;
+		aj.errorCallBack = app.errorCallBack;			
+		aj.sendRequest();
 	},
 
 	successCallBack:function(data){
@@ -45,73 +57,90 @@ var app = {
 	},
 	
 	errorCallBack:function(data){
-		data = app.replaceAll(data,'u','')
+		data = app.replaceAll(data,"	u'",'')
 		data = app.replaceAll(data,"'",'"')
 		JSONResp = JSON.parse(data);
 		window["app"][JSONResp.response](JSONResp.payload);
 	},
 	
-	addNoteResponse:function(){
+	addNoteResponse:function(data){
 			var toAppend=""	
+
+			newElmKey = data.key
 
 			if ( lastElmCount % 3 == 0 && lastElmCount != 0){
 				row+=1
 				toAppend += '<div class="row-fluid" id = "row'+row+'">'
-					  +'<div class="span4" id="elm'+i+'">'
+					  +'<div class="span4" id="'+newElmKey+'">'
 	            	  +'<h2>'+jQuery("#heading").val()+'</span></h2>'
 	            	  +'<p>'+jQuery("#note").val()+'</p>'
-	            	  +'<p><a class="btn" href="#">Remove Note</a></p>'
+	            	  +'<p><a class="btn" href="#"'
+	            	  +' onclick="app.removeNote("'+ newElmKey +'")">Remove Note</a></p>'
 	               	  +'</div>'
 	       		jQuery('#grid').append(toAppend);
 			}
 			else{
-
-				toAppend += '<div class="span4" id="elm'+i+'">'
+				toAppend += '<div class="span4" id="'+newElmKey+'">'
 	            	  +'<h2>'+jQuery("#heading").val()+'</span></h2>'
 	            	  +'<p>'+jQuery("#note").val()+'</p>'
-	            	  +'<p><a class="btn" href="#">Remove Note</a></p>'
-	               	  +'</div>'
+	            	  +'<p><a class="btn" href="#"'
+	            	  +' onclick="app.removeNote("'+ newElmKey +'")">Remove Note</a></p>'
+	            	  +'</div>'
 	            jQuery('#row'+row).append(toAppend);
 			}
 			lastElmCount+=1
 	},
 
 	getNotesResponse:function(data){
-
-		console.log(data)
 		row=0;
 
-		rows = data;
+		rows = data.notes;
+		keys = data.keys;
+		sortedKeys = []
+		jQuery.each(keys, function(key, val) {
+			sortedKeys.push(key);
+		});
+		sortedKeys = sortedKeys.sort();
 		var toAppend = '<div class="row-fluid" id = "row'+row+'">'
 
 		i=0;
-		jQuery.each(rows, function(key, val) {
-
+		while(i<sortedKeys.length){
 			if ( i % 3 == 0 && i != 0){
 				row+=1
-				toAppend += '</div><div class="row-fluid" id = "row'+row+'">'
-				toAppend += '<div class="span4" id="elm'+i+'">'
-	            	  +'<h2>'+key+'</span></h2>'
-	            	  +'<p>'+val+'</p>'
-	            	  +'<p><a class="btn" href="#">Remove Note</a></p>'
-	               	  +'</div>'
 
+				toAppend += '</div><div class="row-fluid" id = "row'+row+'">'
+					  +'<div class="span4" id=@'+ keys[sortedKeys[i]] +'>'
+	            	  +'<h2>'+keys[sortedKeys[i]]+'</span></h2>'
+	            	  +'<p>'+rows[keys[sortedKeys[i]]]+'</p>'
+	            	  +'<p><a class="btn"'
+	            	  +' onclick="app.removeNote(\'@'+ keys[sortedKeys[i]] +'\')">Remove Note</a></p>'
+	               	  +'</div>'
 			}
 			else{
+				toAppend += '<div class="span4" id=@'+ keys[sortedKeys[i]] +'>'
+	            	  +'<h2>'+keys[sortedKeys[i]]+'</span></h2>'
+	            	  +'<p>'+rows[keys[sortedKeys[i]]]+'</p>'
+	            	  +'<p><a class="btn"'
+	            	  +' onclick="app.removeNote(\'@'+ keys[sortedKeys[i]] +'\')">Remove Note</a></p>'
+	            	  +'</div>'
+			}    	      	        	    
+            i+=1
+		}
 
-				toAppend += '<div class="span4" id="elm'+i+'">'
-	            	  +'<h2>'+key+'</span></h2>'
-	            	  +'<p>'+val+'</p>'
-	            	  +'<p><a class="btn" href="#">Remove Note</a></p>'
-	               	  +'</div>'
-			}
-    	      	        	    
-            i+=1	
-		});
 		lastElmCount=i;
 		toAppend += '</div>'
+
+		jQuery.each(keys, function(key, val) {
+			toAppend=app.replaceAll(toAppend,'@'+val,key)
+		});
+
 		jQuery('#grid').append(toAppend);
 
+	},
+
+	removeNoteResponse:function(){
+		console.log('Removed...');
+		return false;
 	},
 
 	replaceAll:function (str, find, replace) {

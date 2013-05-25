@@ -7,7 +7,7 @@ from pycassa.pool import ConnectionPool
 from pycassa.index import *
 
 app = Flask(__name__)
-pool = pycassa.ConnectionPool(keyspace='App', server_list=['192.168.1.26:9160'], prefill=False)
+pool = pycassa.ConnectionPool(keyspace='App', server_list=['127.0.0.1:9160'], prefill=False)
 users = pycassa.ColumnFamily(pool, 'users')
 
 
@@ -46,11 +46,14 @@ def storeInCass():
 
 	resp = {}
 	resp['response'] = 'addNoteResponse'
+	resp['payload'] = {'key':cass_key}
 	return str(resp)
 
 @app.route('/getNotes', methods=['GET'])
 def getNotes():
-	res={}
+	resNotes={}
+	resKeys={}
+
 	query_string = request.query_string 
 	username=urlparse.parse_qs(query_string)['username'][0]	
 	cass_key={}
@@ -59,24 +62,28 @@ def getNotes():
 
 	clause = create_index_clause([username_expr])
 	for key, user in users.get_indexed_slices(clause):
-		if(res.has_key(user["heading"]) == False):
-			#cass_key[user["note"]] = 
-			print
-			res[user["heading"]] = user["note"]
+		if(resNotes.has_key(user["heading"]) == False):
+			resKeys[key] = user["heading"]
+			resNotes[user["heading"]] = user["note"]
 
 	resp = {}
 
 	resp["response"] = "getNotesResponse"
-	resp["payload"] = res 
+	resp["payload"] = {'notes' : resNotes, 'keys' : resKeys} 
 	return str(resp)
 
-'''	
 @app.route('/removeNote',methods=['GET'])
+def removeNote():
 	res={}
 	query_string = request.query_string 
-	username=urlparse.parse_qs(query_string)['username'][0]	
+	userkey=urlparse.parse_qs(query_string)['userkey'][0]
+	users.remove(userkey)
 
-'''
+	resp = {}
+
+	resp["response"] = "removeNoteResponse"
+	resp["payload"] = {} 
+	return str(resp)
 
 
 

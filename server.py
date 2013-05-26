@@ -82,7 +82,7 @@ def removeNote():
 	resp = {}
 
 	resp["response"] = "removeNoteResponse"
-	resp["payload"] = {} 
+	resp["payload"] = {'userkey':userkey} 
 	return str(resp)
 
 

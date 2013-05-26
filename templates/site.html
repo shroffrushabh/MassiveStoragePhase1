@@ -18,6 +18,8 @@
         });    
     </script>
 
+	<script src="http://fgnass.github.io/spin.js/dist/spin.min.js"></script>
+	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
     <link href="http://twitter.github.io/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
     <style type="text/css">
       body {
@@ -76,22 +78,39 @@
       <div class="row-fluid">
         <div class="span3">
           <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">Sidebar</li>
-              <li class="active"><a href="#">Link</a></li>
+            <ul class="nav nav-list" id="sideNav">
+              <li class="nav-header">Notes</li>
             </ul>
           </div>
         </div>
-        <div class="span9" id="grid">
+        <div class="span9">
           <div class="hero-unit">
             <h1 style="margin-bottom: 7px">Quick Note</h1>
    			<textarea rows="1" style="border: none; width: 100%;resize: none" name="heading" id = "heading" placeholder="Heading..." ></textarea>
 			<textarea rows="7" style="border: none; width: 100%;resize: none" name="note" id="note" ></textarea>
             <p><a href="#" class="btn btn-primary btn-large" onclick="app.addNote();return false;">Add Note</a></p>
-          </div>          
+          </div> 
+          
+          <div id="grid"></div>
+                   
         </div>
       </div>
-
+      
+      
+	 <div id="removeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	    <h3 id="myModalLabel"><span id="removeHeader">Remove Note</span></h3>
+	  </div>
+	  <div class="modal-body" id="removeBody">
+	    <p id="removeBodyText" style="margin-bottom: 125px">Are you sure you want to remove this note?</p>
+	  </div>
+	  <div class="modal-footer" id="removeFooter">
+	    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+	    <button class="btn btn-primary" id="sure">Sure</button>
+	  </div>
+	</div>
+      
       <hr>
 
       <footer>

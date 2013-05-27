@@ -1,7 +1,7 @@
 from flask import Flask,render_template,request
-import pycassa,time
+import pycassa,datetime
 import simplejson as json
-import urlparse
+import urlparse,math
 from pycassa.columnfamily import ColumnFamily
 from pycassa.pool import ConnectionPool
 from pycassa.index import *
@@ -26,8 +26,14 @@ def storeInCass():
 	data['username'] = str(request.form['username'])
 	data['heading'] = str(request.form['heading'])
 	data['note'] = str(request.form['note'])
-	cass_key=data['username']+str(time.time())
+
+
+	cass_key=data['username']+"/"+str(datetime.datetime.now().day)+"/"+str(datetime.datetime.now().month)+"/"+str(datetime.datetime.now().hour)+"/"+str(datetime.datetime.now().minute)+"/"+str(datetime.datetime.now().second)
+	
+	print "Cass_key is:"+cass_key
+
 	data['secondaryKey'] = cass_key
+
 
 	username_expr = create_index_expression('username', data['username'])
 	heading_expr = create_index_expression('heading', data['heading'])

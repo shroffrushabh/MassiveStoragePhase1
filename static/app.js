@@ -13,6 +13,7 @@ var app = {
 	
 	addNote:function(){
 
+			debugger;
 			var username = app.getCookie('username');
 			var note = jQuery("#note").val();
 			var heading = jQuery("#heading").val();
@@ -156,19 +157,19 @@ var app = {
 				row+=1
 
 				toAppend += '</div><div class="row-fluid" id = "row'+row+'">'
-					  +'<div class="span4" id=@'+ keys[sortedKeys[i]] +'>'
+					  +'<div class="span4" id='+ sortedKeys[i] +'>'
 	            	  +'<h2>'+keys[sortedKeys[i]]+'</span></h2>'
 	            	  +'<p>'+rows[keys[sortedKeys[i]]]+'</p>'
 	            	  +'<p><a class="btn"'
-	            	  +' onclick="app.removeNote(\'@'+ keys[sortedKeys[i]] +'\')">Remove Note</a></p>'
+	            	  +' onclick="app.removeNote(\''+ sortedKeys[i] +'\')">Remove Note</a></p>'
 	               	  +'</div>'
 			}
 			else{
-				toAppend += '<div class="span4" id=@'+ keys[sortedKeys[i]] +'>'
+				toAppend += '<div class="span4" id=@'+ sortedKeys[i] +'>'
 	            	  +'<h2>'+keys[sortedKeys[i]]+'</span></h2>'
 	            	  +'<p>'+rows[keys[sortedKeys[i]]]+'</p>'
 	            	  +'<p><a class="btn"'
-	            	  +' onclick="app.removeNote(\'@'+ keys[sortedKeys[i]] +'\')">Remove Note</a></p>'
+	            	  +' onclick="app.removeNote(\''+ sortedKeys[i] +'\')">Remove Note</a></p>'
 	            	  +'</div>'
 			}
 
@@ -178,10 +179,6 @@ var app = {
 
 		lastElmCount=i;
 		toAppend += '</div></div>'
-
-		jQuery.each(keys, function(key, val) {
-			toAppend=app.replaceAll(toAppend,'@'+val,key)
-		});
 
 		jQuery('#sideNav').replaceWith('<ul class="nav nav-list" id="sideNav">'
 							              +'<li class="nav-header">Notes</li></ul>');
@@ -195,15 +192,16 @@ var app = {
 		var temp1 = {};
 		var temp2 = {};
 		jQuery.each(keys, function(key, val) {
-			if(key != data.userkey){
+			if(String(key) != String(data.userkey)){
+				console.log(String(key))
+				console.log(String(data.userkey))
 				temp1[key]=val;
-				temp2[keys[data.userkey]]=rows[keys[data.userkey]];
+				temp2[keys[key]]=rows[val];
 			}	
 		});
 		keys = temp1;
 		rows = temp2;
 	
-
 		jQuery('#removeModal').modal('toggle');
 		jQuery(document.getElementById(data.userkey)).remove();
 

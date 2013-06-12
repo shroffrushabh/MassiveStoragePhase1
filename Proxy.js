@@ -27,6 +27,9 @@ http.createServer(function(request, response) {
     case 'create2':
     createFile('CREATE',hosts.datanode,query.path, request)
     break
+    case 'delete':
+    sendDELETERequest('DELETE',hosts.datanode,query.path)
+    break
 
   }
 
@@ -57,6 +60,17 @@ function createFile(op, datanode, loc, req){
   }));
 
 }
+
+function sendDELETERequest(op, namenode, loc){
+  url = 'http://'+namenode+":"+namenodePort+"/webhdfs/v1/usr/"+loc+"?op="+op
+  request(
+    { method: 'DELETE' 
+    , url: url}
+    ,function (error, response, body) {
+      console.log(response);
+    });
+}
+
 
 function sendGETRequest(op, namenode, loc){
   url = 'http://'+namenode+":"+namenodePort+"/webhdfs/v1/usr/"+loc+"?op="+op

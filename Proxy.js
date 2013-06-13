@@ -6,97 +6,59 @@ var url  = require('url');
 
 var namenodePort = 50070;
 var datanodePort = 50075;
-var hosts = readHosts()
+//var hosts = readHosts()
+var hosts = {}
 
-hosts['namenode'] = '192.168.1.14'
-hosts['datanode'] = '192.168.1.14'
+hosts['namenode'] = '192.168.1.24'
+hosts['datanode'] = '192.168.1.24'
 
 http.createServer(function(request, response) {
-
   var query = url.parse(request.url, true).query;
   switch(query.op){
     case 'mkdir':
-    sendPUTRequest('MKDIRS',hosts.namenode,query.path)
+    response.writeHead(200, { 'Content-Type': 'text/json' });
+    tmp=sendRequestToHDFS('MKDIRS&permission=777', hosts.namenode+':'+namenodePort, 'PUT', query.path, response);
     break
     case 'ls':
-    sendGETRequest('LISTSTATUS',hosts.namenode,query.path)
+    sendRequestToHDFS('LISTSTATUS', hosts.namenode+":"+namenodePort, 'GET', query.path, response)
     break
-    case 'create1':
-    sendPUTRequest('CREATE',hosts.namenode,query.path)
-    break
-    case 'create2':
-    createFile('CREATE',hosts.datanode,query.path, request)
+    case 'create':
+    sendRequestToHDFS('CREATE',hosts.datanode+":"+datanodePort, 'PUT', query.path, response, request)
     break
     case 'delete':
-    sendDELETERequest('DELETE',hosts.datanode,query.path)
+    sendRequestToHDFS('DELETE',hosts.namenode+":"+namenodePort, 'DELETE', response, query.path)
     break
-
   }
-
-
-  //request.put('http://192.168.1.14:50070/webhdfs/v1/usr/rushabh/README.txt?op=CREATE&permission=777')
-
-  //request(
-  //  { method: 'PUT' 
-  //  , url: 'http://192.168.1.14:50070/webhdfs/v1/usr/rushabh/README.txt?op=CREATE&permission=777'}
-  //  ,function (error, response, body) {
-  //    console.log(response.headers.location);
-  //    storeInDFS(response.headers.location);
-  //  }
-  //);
-
-  //storeInDFS(request,"");
-
 }).listen(8000);
 
 
-
-function createFile(op, datanode, loc, req){
-  url = 'http://'+datanode+":"+datanodePort+"/webhdfs/v1/usr/"+loc+"?op="+op+"&replication=2"
-  req.pipe(request.put(url, function (error, response, body) {
-      console.log(error);
-      console.log(response);
-      console.log(body);
-  }));
-
+function sendRequestToHDFS(op, addressTo, requestType, loc, res, req){
+  if(req == undefined){
+    url = 'http://'+addressTo+"/webhdfs/v1/usr/"+loc+"?op="+op
+    console.log("Sending " + requestType + " request to:-\n"+url)
+      request(
+      { method: requestType
+      , url: url}
+      ,function (error, response, body) {
+        if(error != undefined){
+          return error;  
+        } 
+        tmp = successCallback(response,body)
+        res.write(tmp+"");
+        res.end()
+      });
+  }
+  else {
+    url = 'http://'+addressTo+"/webhdfs/v1/usr/"+loc+"?op="+op+"&replication=2&permission=777"
+    console.log("Piping " + requestType + " request to:-\n"+url)
+    req.pipe(request.put(url, function (error, response, body) {
+        console.log(response);
+    }));
+  }
 }
 
-function sendDELETERequest(op, namenode, loc){
-  url = 'http://'+namenode+":"+namenodePort+"/webhdfs/v1/usr/"+loc+"?op="+op
-  request(
-    { method: 'DELETE' 
-    , url: url}
-    ,function (error, response, body) {
-      console.log(response);
-    });
-}
-
-
-function sendGETRequest(op, namenode, loc){
-  url = 'http://'+namenode+":"+namenodePort+"/webhdfs/v1/usr/"+loc+"?op="+op
-  request.get(url,function (error, response, body) {
-      console.log(error);
-      console.log(response);
-      console.log(body);
-    });
-}
-
-// Add permissions param
-function sendPUTRequest(op, namenode, loc){
-  url = 'http://'+namenode+":"+namenodePort+"/webhdfs/v1/usr/"+loc+"?op="+op+"&replication=2"
-
-  request(
-    { method: 'PUT' 
-    , url: url}
-    ,function (error, response, body) {
-      console.log(response.headers.location);
-    });
-
-  /*request.put(url,function (error, response, body) {
-      console.log(error);
-      console.log(response);
-      console.log(body);
-    });*/
+function successCallback(response,body){
+  return JSON.parse(body).boolean;
 }
 
 function readHosts(){

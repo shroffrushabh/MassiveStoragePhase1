@@ -26,14 +26,16 @@ http.createServer(function(request, response) {
     sendRequestToHDFS('CREATE',hosts.datanode+":"+datanodePort, 'PUT', query.path, response, request)
     break
     case 'delete':
-    sendRequestToHDFS('DELETE',hosts.namenode+":"+namenodePort, 'DELETE', response, query.path)
+    sendRequestToHDFS('DELETE',hosts.namenode+":"+namenodePort, 'DELETE', query.path, response)
     break
   }
 }).listen(8000);
 
+console.log("Server started at http://127.0.0.1:8000");
 
 function sendRequestToHDFS(op, addressTo, requestType, loc, res, req){
   if(req == undefined){
+    console.log(loc)
     url = 'http://'+addressTo+"/webhdfs/v1/usr/"+loc+"?op="+op
     console.log("Sending " + requestType + " request to:-\n"+url)
       request(
@@ -43,8 +45,7 @@ function sendRequestToHDFS(op, addressTo, requestType, loc, res, req){
         if(error != undefined){
           return error;  
         } 
-        tmp = successCallback(response,body)
-        res.write(tmp+"");
+        res.write(successCallback(response,body)+"");
         res.end()
       });
   }
@@ -58,6 +59,11 @@ function sendRequestToHDFS(op, addressTo, requestType, loc, res, req){
 }
 
 function successCallback(response,body){
+
+  // ls returns a json with FileStatues in the body
+  // create return '' if successfully, else returns an error
+  // delete and mkdir return corresponding booleans
+
   return JSON.parse(body).boolean;
 }
 

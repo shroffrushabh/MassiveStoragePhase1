@@ -9,62 +9,83 @@ var datanodePort = 50075;
 //var hosts = readHosts()
 var hosts = {}
 
-hosts['namenode'] = '192.168.1.24'
-hosts['datanode'] = '192.168.1.24'
+hosts['namenode'] = '172.16.17.132'
+hosts['datanode'] = '172.16.17.132'
 
 http.createServer(function(request, response) {
   var query = url.parse(request.url, true).query;
+  var operation = query.op;
   switch(query.op){
     case 'mkdir':
-    response.writeHead(200, { 'Content-Type': 'text/json' });
-    tmp=sendRequestToHDFS('MKDIRS&permission=777', hosts.namenode+':'+namenodePort, 'PUT', query.path, response);
+    sendRequestToHDFS('MKDIRS', hosts.namenode+':'+namenodePort, 'PUT', query.path, operation, response);
     break
     case 'ls':
-    sendRequestToHDFS('LISTSTATUS', hosts.namenode+":"+namenodePort, 'GET', query.path, response)
+    sendRequestToHDFS('LISTSTATUS', hosts.namenode+":"+namenodePort, 'GET', query.path, operation, response)
     break
-    case 'create':
-    sendRequestToHDFS('CREATE',hosts.datanode+":"+datanodePort, 'PUT', query.path, response, request)
+    case 'create1':
+    sendRequestToHDFS('CREATE',hosts.namenode+":"+namenodePort, 'PUT', query.path, operation, response)
+    break
+    case 'create2':
+    sendRequestToHDFS('CREATE',hosts.datanode+":"+datanodePort, 'PUT', query.uri, operation, response, request)
     break
     case 'delete':
-    sendRequestToHDFS('DELETE',hosts.namenode+":"+namenodePort, 'DELETE', query.path, response)
+    sendRequestToHDFS('DELETE',hosts.namenode+":"+namenodePort, 'DELETE', query.path, operation, response)
     break
   }
 }).listen(8000);
 
 console.log("Server started at http://127.0.0.1:8000");
 
-function sendRequestToHDFS(op, addressTo, requestType, loc, res, req){
+function sendRequestToHDFS(op, addressTo, requestType, loc, operation, res, req){
+  
   if(req == undefined){
-    console.log(loc)
     url = 'http://'+addressTo+"/webhdfs/v1/usr/"+loc+"?op="+op
     console.log("Sending " + requestType + " request to:-\n"+url)
       request(
       { method: requestType
       , url: url}
       ,function (error, response, body) {
-        if(error != undefined){
+        if(error != undefined) {
           return error;  
-        } 
-        res.write(successCallback(response,body)+"");
-        res.end()
+        }
+        res.writeHead(200, { 'Content-Type': 'text/json' });
+        res.write(successCallback(response,body,operation)+"");
+        res.end();
       });
   }
   else {
-    url = 'http://'+addressTo+"/webhdfs/v1/usr/"+loc+"?op="+op+"&replication=2&permission=777"
-    console.log("Piping " + requestType + " request to:-\n"+url)
-    req.pipe(request.put(url, function (error, response, body) {
-        console.log(response);
+    //url = 'http://'+addressTo+"/webhdfs/v1/usr/"+loc+"?op="+op+"&replication=2&permission=777"
+    console.log("Piping " + requestType + " request to:-\n"+loc)
+    req.pipe(request.put(loc, function (error, response, body) {
+        if(error != undefined) {
+          console.log(error);
+          return error;  
+        }   
+        res.writeHead(200, { 'Content-Type': 'text/json' });
+        res.write(successCallback(response,body,operation)+"");
+        res.end();
     }));
   }
 }
 
-function successCallback(response,body){
-
-  // ls returns a json with FileStatues in the body
-  // create return '' if successfully, else returns an error
-  // delete and mkdir return corresponding booleans
-
-  return JSON.parse(body).boolean;
+function successCallback(response, body, operation){
+  switch(operation){
+    case 'mkdir':
+    return body;
+    break
+    case 'ls':
+    return body;    
+    break
+    case 'create1':
+    return JSON.stringify(response.headers);
+    break
+    case 'create2':
+    return JSON.stringify(response.headers);
+    break
+    case 'delete':
+    return response.body;
+    break
+  }
 }
 
 function readHosts(){

@@ -9,8 +9,8 @@ var datanodePort = 50075;
 //var hosts = readHosts()
 var hosts = {}
 
-hosts['namenode'] = '172.16.17.132'
-hosts['datanode'] = '172.16.17.132'
+hosts['namenode'] = '172.16.17.137'
+hosts['datanode'] = '172.16.17.137'
 
 http.createServer(function(request, response) {
   var query = url.parse(request.url, true).query;
